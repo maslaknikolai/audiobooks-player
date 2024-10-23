@@ -64,21 +64,37 @@
     const createBookmarkBtn = document.getElementById('createBookmark');
     const bookmarksContainer = document.getElementById('bookmarksContainer');
 
-    // Store bookmarks
+    // Store bookmarks and current file name
     let bookmarks = [];
+    let currentFileName = '';
+
+    // Load bookmarks from localStorage
+    function loadBookmarks(fileName) {
+      const savedBookmarks = localStorage.getItem(`bookmarks_${fileName}`);
+      return savedBookmarks ? JSON.parse(savedBookmarks) : [];
+    }
+
+    // Save bookmarks to localStorage
+    function saveBookmarks() {
+      if (currentFileName) {
+        localStorage.setItem(`bookmarks_${currentFileName}`, JSON.stringify(bookmarks));
+      }
+    }
 
     // Handle file selection and load it into the audio player
     audioFileInput.addEventListener('change', function() {
       const file = audioFileInput.files[0];
 
       if (!file) {
-        return
+        return;
       }
 
+      currentFileName = file.name;
       const fileURL = URL.createObjectURL(file);
       audioPlayer.src = fileURL;
-      // Clear bookmarks when new file is loaded
-      bookmarks = [];
+      
+      // Load bookmarks for this file
+      bookmarks = loadBookmarks(currentFileName);
       updateBookmarksDisplay();
     });
 
@@ -103,12 +119,14 @@
       const time = audioPlayer.currentTime;
       bookmarks.push(time);
       bookmarks.sort((a, b) => a - b); // Sort bookmarks by time
+      saveBookmarks();
       updateBookmarksDisplay();
     });
 
     // Remove bookmark
     function removeBookmark(index) {
       bookmarks.splice(index, 1);
+      saveBookmarks();
       updateBookmarksDisplay();
     }
 
