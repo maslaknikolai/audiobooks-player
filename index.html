@@ -13,6 +13,23 @@
       padding: 5px 10px;
       cursor: pointer;
     }
+    .bookmark-item {
+      display: inline-flex;
+      align-items: center;
+      margin: 5px;
+    }
+    .remove-bookmark {
+      margin-left: 5px;
+      padding: 5px 8px;
+      background-color: #ff4444;
+      color: white;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    .remove-bookmark:hover {
+      background-color: #cc0000;
+    }
   </style>
 </head>
 <body>
@@ -89,17 +106,34 @@
       updateBookmarksDisplay();
     });
 
+    // Remove bookmark
+    function removeBookmark(index) {
+      bookmarks.splice(index, 1);
+      updateBookmarksDisplay();
+    }
+
     // Update bookmarks display
     function updateBookmarksDisplay() {
       bookmarksContainer.innerHTML = '';
       bookmarks.forEach((time, index) => {
+        const bookmarkItem = document.createElement('div');
+        bookmarkItem.className = 'bookmark-item';
+
         const button = document.createElement('button');
         button.className = 'bookmark-button';
         button.textContent = `Bookmark ${index + 1} (${formatTime(time)})`;
         button.addEventListener('click', () => {
           audioPlayer.currentTime = time;
         });
-        bookmarksContainer.appendChild(button);
+
+        const removeButton = document.createElement('button');
+        removeButton.className = 'remove-bookmark';
+        removeButton.textContent = '×';
+        removeButton.addEventListener('click', () => removeBookmark(index));
+
+        bookmarkItem.appendChild(button);
+        bookmarkItem.appendChild(removeButton);
+        bookmarksContainer.appendChild(bookmarkItem);
       });
     }
 
