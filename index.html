@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Audiobook Player</title>
+</head>
+<body>
+  <!-- File input to select an MP3 file -->
+  <input type="file" id="audioFile" accept="audio/mp3" />
+
+  <!-- Audio element to play the selected file -->
+  <audio id="audioPlayer" controls></audio>
+
+  <!-- Progress bar to show and control playback time -->
+  <progress id="progressBar" value="0" max="1" style="width: 100%;"></progress>
+
+  <!-- Display current time and duration -->
+  <div>
+    <span id="currentTime">0:00</span> / <span id="duration">0:00</span>
+  </div>
+
+  <script>
+    const audioFileInput = document.getElementById('audioFile');
+    const audioPlayer = document.getElementById('audioPlayer');
+    const progressBar = document.getElementById('progressBar');
+    const currentTimeDisplay = document.getElementById('currentTime');
+    const durationDisplay = document.getElementById('duration');
+
+    // Handle file selection and load it into the audio player
+    audioFileInput.addEventListener('change', function() {
+      const file = audioFileInput.files[0];
+
+      if (!file) {
+        return
+      }
+
+      const fileURL = URL.createObjectURL(file);
+      audioPlayer.src = fileURL;
+    });
+
+    audioPlayer.addEventListener('loadedmetadata', () => {
+      progressBar.max = audioPlayer.duration;
+      durationDisplay.textContent = formatTime(audioPlayer.duration);
+    });
+
+    // Update progress bar and time display during playback
+    audioPlayer.addEventListener('timeupdate', () => {
+      progressBar.value = audioPlayer.currentTime;
+      currentTimeDisplay.textContent = formatTime(audioPlayer.currentTime);
+    });
+
+    // Handle progress bar interaction to change playback time
+    progressBar.addEventListener('input', function() {
+      audioPlayer.currentTime = progressBar.value;
+    });
+
+    // Helper function to format time as minutes:seconds
+    function formatTime(time) {
+      const minutes = Math.floor(time / 60);
+      const seconds = Math.floor(time % 60);
+      return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }
+  </script>
+</body>
+</html>
