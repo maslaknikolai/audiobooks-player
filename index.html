@@ -81,6 +81,19 @@
       }
     }
 
+    // Save current playback position
+    function savePlaybackPosition() {
+      if (currentFileName && !audioPlayer.paused) {
+        localStorage.setItem(`playback_${currentFileName}`, audioPlayer.currentTime);
+      }
+    }
+
+    // Load playback position
+    function loadPlaybackPosition(fileName) {
+      const savedPosition = localStorage.getItem(`playback_${fileName}`);
+      return savedPosition ? parseFloat(savedPosition) : 0;
+    }
+
     // Handle file selection and load it into the audio player
     audioFileInput.addEventListener('change', function() {
       const file = audioFileInput.files[0];
@@ -96,6 +109,15 @@
       // Load bookmarks for this file
       bookmarks = loadBookmarks(currentFileName);
       updateBookmarksDisplay();
+
+      // Load last playback position after metadata is loaded
+      audioPlayer.addEventListener('loadedmetadata', function onceLoaded() {
+        const lastPosition = loadPlaybackPosition(currentFileName);
+        if (lastPosition > 0 && lastPosition < audioPlayer.duration) {
+          audioPlayer.currentTime = lastPosition;
+        }
+        audioPlayer.removeEventListener('loadedmetadata', onceLoaded);
+      });
     });
 
     audioPlayer.addEventListener('loadedmetadata', () => {
@@ -107,6 +129,16 @@
     audioPlayer.addEventListener('timeupdate', () => {
       progressBar.value = audioPlayer.currentTime;
       currentTimeDisplay.textContent = formatTime(audioPlayer.currentTime);
+    });
+
+    // Save playback position periodically during playback
+    setInterval(savePlaybackPosition, 1000);
+
+    // Save position when pausing
+    audioPlayer.addEventListener('pause', () => {
+      if (currentFileName) {
+        localStorage.setItem(`playback_${currentFileName}`, audioPlayer.currentTime);
+      }
     });
 
     // Handle progress bar interaction to change playback time
