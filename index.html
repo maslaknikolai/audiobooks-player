@@ -4,6 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Audiobook Player</title>
+  <style>
+    .bookmarks-container {
+      margin-top: 20px;
+    }
+    .bookmark-button {
+      margin: 5px;
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
   <!-- File input to select an MP3 file -->
@@ -20,12 +30,25 @@
     <span id="currentTime">0:00</span> / <span id="duration">0:00</span>
   </div>
 
+  <!-- Bookmark controls -->
+  <div>
+    <button id="createBookmark">Create Bookmark</button>
+  </div>
+
+  <!-- Bookmarks container -->
+  <div id="bookmarksContainer" class="bookmarks-container"></div>
+
   <script>
     const audioFileInput = document.getElementById('audioFile');
     const audioPlayer = document.getElementById('audioPlayer');
     const progressBar = document.getElementById('progressBar');
     const currentTimeDisplay = document.getElementById('currentTime');
     const durationDisplay = document.getElementById('duration');
+    const createBookmarkBtn = document.getElementById('createBookmark');
+    const bookmarksContainer = document.getElementById('bookmarksContainer');
+
+    // Store bookmarks
+    let bookmarks = [];
 
     // Handle file selection and load it into the audio player
     audioFileInput.addEventListener('change', function() {
@@ -37,6 +60,9 @@
 
       const fileURL = URL.createObjectURL(file);
       audioPlayer.src = fileURL;
+      // Clear bookmarks when new file is loaded
+      bookmarks = [];
+      updateBookmarksDisplay();
     });
 
     audioPlayer.addEventListener('loadedmetadata', () => {
@@ -54,6 +80,28 @@
     progressBar.addEventListener('input', function() {
       audioPlayer.currentTime = progressBar.value;
     });
+
+    // Create bookmark at current time
+    createBookmarkBtn.addEventListener('click', () => {
+      const time = audioPlayer.currentTime;
+      bookmarks.push(time);
+      bookmarks.sort((a, b) => a - b); // Sort bookmarks by time
+      updateBookmarksDisplay();
+    });
+
+    // Update bookmarks display
+    function updateBookmarksDisplay() {
+      bookmarksContainer.innerHTML = '';
+      bookmarks.forEach((time, index) => {
+        const button = document.createElement('button');
+        button.className = 'bookmark-button';
+        button.textContent = `Bookmark ${index + 1} (${formatTime(time)})`;
+        button.addEventListener('click', () => {
+          audioPlayer.currentTime = time;
+        });
+        bookmarksContainer.appendChild(button);
+      });
+    }
 
     // Helper function to format time as minutes:seconds
     function formatTime(time) {
